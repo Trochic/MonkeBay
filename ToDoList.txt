@@ -1,0 +1,13 @@
+connexion (a partir de la page accueil?) -> vers compte avec vérification de l'id et correspondance avec le mdp sinon erreur (ok)
+            cas exceptionnel admin (pas ok)
+
+Inscription -> verification unicité id -> acces compte (ok)
+
+Compte ->   Acceder a sa collection (ok)
+            Ajout film (si deja 5 supprime le plus récent) (a faire)
+            Supprimer film (a faire)
+            
+Bouton deconnexion
+Bouton Accueil
+
+Admin -> acces liste inscrit et possibilité de suppression compte (entraine suppression collection)
