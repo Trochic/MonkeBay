@@ -35,7 +35,7 @@ contract Annonce {
     string public modeAcheminement;
     Utilisateur public user;
 
-    constructor(string memory _titre, string memory _description, string memory _etat, uint _prix, Utilisateur _user, string memory _modeAcheminement, string memory _localisation) {
+    constructor(Utilisateur _user, string memory _titre, string memory _description, string memory _etat, uint _prix, string memory _modeAcheminement, string memory _localisation) {
         titre = _titre;
         description = _description;
         etat = _etat;
@@ -81,13 +81,11 @@ contract MonkeFlip{
     }
     
     //Créé nouvelle Annonce et fais les mises à jour des données
-    function creerAnnonce(string memory _titre, string memory _description, string memory _etat, uint _prix, Utilisateur _user, string memory _modeAcheminement, string memory _localisation) isRegistered public{
+    function creerAnnonce(string memory _titre, string memory _description, string memory _etat, uint _prix, string memory _modeAcheminement, string memory _localisation) isRegistered public{
         require(_prix>0,"Le prix doit etre superieur a 0");
-        Annonce newAnnonce = new Annonce(_titre,_description,_etat, _prix,_user,_modeAcheminement,_localisation);
+        Annonce newAnnonce = new Annonce(listeUtilisateurs[msg.sender],_titre,_description,_etat, _prix,_modeAcheminement,_localisation);
         listeAnnonces[msg.sender][listeUtilisateurs[msg.sender].nombreAnnonce()] = newAnnonce;
-        uint temp = listeUtilisateurs[msg.sender].nombreAnnonce();
-        temp += 1;
-        listeUtilisateurs[msg.sender].setNombreAnnonce(temp);
+        listeUtilisateurs[msg.sender].setNombreAnnonce(listeUtilisateurs[msg.sender].nombreAnnonce()+1);
     }
 
     //Modifie une annonce
