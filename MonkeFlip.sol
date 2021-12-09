@@ -2,19 +2,21 @@
 pragma solidity ^0.8.1;
 
 contract Utilisateur {
-    string public adress;
+    address public adress;
     string public localisation;
     string public mail;
     string public tel;
     string public username;
     uint public nombreAnnonce;
+    bool public registered;
 
-    constructor(string memory _adress, string memory _localisation, string memory _mail, string memory _tel, string memory _username) {
+    constructor(address _adress, string memory _localisation, string memory _mail, string memory _tel, string memory _username) {
         adress = _adress;
         localisation = _localisation;
         mail = _mail;
         tel = _tel;
         username = _username;
+        registered = true;
         nombreAnnonce=0;
     }
 
@@ -59,16 +61,28 @@ contract MonkeFlip{
 
     mapping(address => Utilisateur) public listeUtilisateurs;
     mapping(address => mapping(uint => Annonce)) public listeAnnonces;
+    mapping(address => bool) utilisateurExiste;
     event AnnonceCree(address createur, uint idAnnonce);
 
+    modifier isRegistered() {
+        require(utilisateurExiste[msg.sender], "Vous n'etes pas enregistre");
+        _;
+    }
+
+    function test(string memory hello) public view isRegistered returns(string memory){
+        return hello;
+    }
+
     //Créé nouvel utilisateur
-    function nouvelUtilisateur(string memory _adress, string memory _localisation, string memory _mail, string memory _tel, string memory _username) public {
-        Utilisateur newUser = new Utilisateur(_adress,_localisation,_mail,_tel,_username);
+    function nouvelUtilisateur(string memory _localisation, string memory _mail, string memory _tel, string memory _username) public {
+        Utilisateur newUser = new Utilisateur(msg.sender,_localisation,_mail,_tel,_username);
+        utilisateurExiste[msg.sender]=true;
         listeUtilisateurs[msg.sender] = newUser;
     }
     
     //Créé nouvelle Annonce et fais les mises à jour des données
-    function creerAnnonce(string memory _titre, string memory _description, string memory _etat, uint _prix, Utilisateur _user, string memory _modeAcheminement, string memory _localisation) public{
+    function creerAnnonce(string memory _titre, string memory _description, string memory _etat, uint _prix, Utilisateur _user, string memory _modeAcheminement, string memory _localisation) isRegistered public{
+        require(_prix>0,"Le prix doit etre superieur a 0");
         Annonce newAnnonce = new Annonce(_titre,_description,_etat, _prix,_user,_modeAcheminement,_localisation);
         listeAnnonces[msg.sender][listeUtilisateurs[msg.sender].nombreAnnonce()] = newAnnonce;
         uint temp = listeUtilisateurs[msg.sender].nombreAnnonce();
@@ -77,7 +91,7 @@ contract MonkeFlip{
     }
 
     //Modifie une annonce
-    function modifierAnnonce(uint indexAnnonce, string memory _titre, string memory _description, string memory _etat, uint _prix, string memory _modeAcheminement, string memory _localisation) public {
+    function modifierAnnonce(uint indexAnnonce, string memory _titre, string memory _description, string memory _etat, uint _prix, string memory _modeAcheminement, string memory _localisation) isRegistered public {
         listeAnnonces[msg.sender][indexAnnonce].modifierAnnonce(_titre,_description,_etat, _prix,_modeAcheminement,_localisation);
     }
 
