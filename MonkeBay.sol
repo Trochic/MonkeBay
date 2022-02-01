@@ -11,7 +11,6 @@ contract Utilisateur {
     uint public nombreAchats;
     bool public registered;
 
-
     constructor(address _adress, string memory _localisation, string memory _mail, string memory _tel, string memory _username) {
         adress = _adress;
         localisation = _localisation;
@@ -19,9 +18,15 @@ contract Utilisateur {
         tel = _tel;
         username = _username;
         registered = true;
-        nombreAnnonce=0;
+        nombreAnnonce = 0;
     }
-
+    
+    function modifierUtilisateur(string memory _localisation, string memory _mail, string memory _tel, string memory _username)public{
+        localisation = _localisation;
+        mail = _mail;
+        tel = _tel;
+        username = _username;
+    }
     //Pour changer le nombre d'annonces
     function setNombreAnnonce(uint nb) public {
         nombreAnnonce = nb;
@@ -74,11 +79,17 @@ contract Annonce {
 
 contract MonkeFlip{
 
-    
     mapping(address => Utilisateur) public listeUtilisateurs;
     mapping(address => mapping(uint => Annonce)) public listeAnnonces;
     mapping(address => mapping(uint => Annonce)) public listeHistoriqueAchat;
+
     mapping(address => bool) utilisateurExiste;
+
+    mapping(address => mapping(address => mapping(uint => string))) public listeMessagesEnvoyes;
+    mapping(address => mapping(address => mapping(uint => string))) public listeMessagesRecus;
+    
+    mapping(address => mapping(address => uint)) public nbMessagesEnvoyes;
+    mapping(address => mapping(address => uint)) public nbMessagesRecus;
 
     event AnnonceCree(address createur, uint idAnnonce);
 
@@ -97,7 +108,9 @@ contract MonkeFlip{
         utilisateurExiste[msg.sender]=true;
         listeUtilisateurs[msg.sender] = newUser;
     }
-    
+    function modifierUtilisateur(string memory _localisation, string memory _mail, string memory _tel, string memory _username) public{
+        listeUtilisateurs[msg.sender].modifierUtilisateur(_localisation, _mail, _tel, _username);
+    }
     //Créé nouvelle Annonce et fais les mises à jour des données
     function creerAnnonce(string memory _titre, string memory _description, string memory _etat, uint _prix, string memory _modeAcheminement, string memory _localisation) isRegistered public{
         require(_prix>0,"Le prix doit etre superieur a 0");
@@ -126,8 +139,19 @@ contract MonkeFlip{
         creerAnnonce("Titre4","Desc4","Etat4",4000000000000000000,"modeAcheminement4","localisation4");
     }
 
+    function envoyerMessage(address _to, string memory _message) public isRegistered{
+        require(msg.sender!=_to, "Vous ne pouvez pas envoyer de messages a vous meme");
+        Utilisateur sender = listeUtilisateurs[msg.sender];
+        
+        nbMessagesEnvoyes[sender.adress()][_to] = nbMessagesEnvoyes[sender.adress()][_to] + 1;
+        listeMessagesEnvoyes[sender.adress()][_to][nbMessagesEnvoyes[sender.adress()][_to]] = _message;
+        
+        nbMessagesRecus[_to][sender.adress()] = nbMessagesRecus[_to][sender.adress()]+ 1;
+        listeMessagesRecus[_to][sender.adress()][nbMessagesRecus[_to][sender.adress()]] = _message;
+    }
+   
+
     /*
-        ModifierAnnonce
         CreerEnchere
         ModifierEnchere
         SupprimerEnchere
